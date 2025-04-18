@@ -33,38 +33,3 @@
 
 このリポジトリは [MIT License](LICENSE) のもとで公開されています。
 
-## CI/CD（GitHub Actions 例）
-
-`.github/workflows/python.yml` に以下のような設定を追加することで、CI環境でLintチェックなどが行えます：
-
-```yaml
-name: Python CI
-
-on:
-  push:
-    branches: [ main ]
-  pull_request:
-    branches: [ main ]
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.11'
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-      - name: Lint with flake8
-        run: |
-          pip install flake8
-          flake8 .
-```
-
----
-
-🚀 ご自由にフォーク・改善・提案してください！
