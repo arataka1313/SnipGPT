@@ -1,11 +1,10 @@
 import os
 import base64
 import openai
-import pyautogui
 import tkinter as tk
-from datetime import datetime
 from dotenv import load_dotenv
 from PIL import ImageGrab
+
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
@@ -13,8 +12,10 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 # グローバル変数
 start_x = start_y = end_x = end_y = 0
 
+
 def select_area():
     """マウスで範囲選択（Escキーでキャンセル可能）"""
+
     def on_mouse_down(event):
         nonlocal rect
         canvas.delete("rect")
@@ -34,10 +35,10 @@ def select_area():
         end_x, end_y = event.x, event.y
         root.quit()
 
-    def on_escape(event):  # 🔧 Escキーで終了する処理
+    def on_escape(event):
         print("❌ キャプチャがキャンセルされました（Escキー）")
         root.quit()
-        raise SystemExit  # 🔧 プログラム全体を中止！
+        raise SystemExit
 
     root = tk.Tk()
     root.attributes('-alpha', 0.3)
@@ -51,36 +52,19 @@ def select_area():
     canvas.bind("<ButtonPress-1>", on_mouse_down)
     canvas.bind("<B1-Motion>", on_mouse_move)
     canvas.bind("<ButtonRelease-1>", on_mouse_up)
-    canvas.bind("<Escape>", on_escape) 
+    canvas.bind("<Escape>", on_escape)
 
     root.mainloop()
     root.destroy()
 
 
-def get_next_problem_filename():
-    """problem1.png, problem2.png のように連番で保存する"""
-    i = 1
-    while True:
-        filename = f"problem{i}.png"
-        if not os.path.exists(filename):
-            return filename
-        i += 1
-
-def capture_selected_area():
-    """選択された領域のスクリーンショットを撮って連番で保存"""
-    x1, y1 = min(start_x, end_x), min(start_y, end_y)
-    x2, y2 = max(start_x, end_x), max(start_y, end_y)
-    img = ImageGrab.grab(bbox=(x1, y1, x2, y2))
-    filename = get_next_problem_filename()  # ← ここで連番取得
-    img.save(filename)
-    return filename
-
 def ensure_problem_dir():
     if not os.path.exists("problems"):
         os.makedirs("problems")
 
+
 def get_next_problem_filename():
-    ensure_problem_dir()  # ← ここでディレクトリを確認・作成！
+    ensure_problem_dir()
     i = 1
     while True:
         filename = f"problems/problem{i}.png"
@@ -88,9 +72,21 @@ def get_next_problem_filename():
             return filename
         i += 1
 
+
+def capture_selected_area():
+    """選択された領域のスクリーンショットを撮って連番で保存"""
+    x1, y1 = min(start_x, end_x), min(start_y, end_y)
+    x2, y2 = max(start_x, end_x), max(start_y, end_y)
+    img = ImageGrab.grab(bbox=(x1, y1, x2, y2))
+    filename = get_next_problem_filename()
+    img.save(filename)
+    return filename
+
+
 def ensure_answer_dir():
     if not os.path.exists("answer"):
         os.makedirs("answer")
+
 
 def get_next_answer_filename():
     i = 1
@@ -99,6 +95,7 @@ def get_next_answer_filename():
         if not os.path.exists(filename):
             return filename
         i += 1
+
 
 def save_answer_to_file(text):
     ensure_answer_dir()
@@ -112,22 +109,29 @@ def encode_image_to_base64(image_path):
     with open(image_path, "rb") as f:
         return base64.b64encode(f.read()).decode("utf-8")
 
+
 def ask_chatgpt_with_image(image_path, prompt="この画像の問題に答えてください。"):
     encoded_image = encode_image_to_base64(image_path)
     response = openai.ChatCompletion.create(
-        model="gpt-4o",  # 最新モデル！
+        model="gpt-4o",
         messages=[
             {
                 "role": "user",
                 "content": [
                     {"type": "text", "text": prompt},
-                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded_image}"}}
+                    {
+                        "type": "image_url",
+                        "image_url": {
+                            "url": f"data:image/png;base64,{encoded_image}"
+                        }
+                    }
                 ]
             }
         ],
         max_tokens=1000
     )
     return response.choices[0].message["content"]
+
 
 def main():
     print("🖱 範囲をドラッグして選択してください...")
@@ -144,7 +148,6 @@ def main():
     print("\n📋 ChatGPTの回答:\n")
     print(answer)
 
-    # ⬇️ 回答をファイルに保存！
     save_answer_to_file(answer)
 
 
