@@ -36,7 +36,7 @@ def select_area():
         root.quit()
 
     def on_escape(event):
-        print("❌ キャプチャがキャンセルされました（Escキー）")
+        print("キャプチャがキャンセルされました（Escキー）")
         root.quit()
         raise SystemExit
 
@@ -102,7 +102,7 @@ def save_answer_to_file(text):
     filename = get_next_answer_filename()
     with open(filename, "w", encoding="utf-8") as f:
         f.write(text)
-    print(f"💾 回答を {filename} に保存しました。")
+    print(f" 回答を {filename} に保存しました。")
 
 
 def encode_image_to_base64(image_path):
@@ -139,13 +139,13 @@ def main():
     print("📸 選択範囲をキャプチャ中...")
     path = capture_selected_area()
 
-    user_input = input("📝 指示を入力してください（空でEnterするとデフォルト文が使われます）:\n> ")
+    user_input = input(" 指示を入力してください（空でEnterするとデフォルト文が使われます）:\n> ")
     default_prompt = "この画像の問題に対して適切に答えてください。"
     prompt = user_input.strip() or default_prompt
 
-    print("📤 ChatGPTに送信中...")
+    print(" ChatGPTに送信中...")
     answer = ask_chatgpt_with_image(path, prompt)
-    print("\n📋 ChatGPTの回答:\n")
+    print("\n ChatGPTの回答:\n")
     print(answer)
 
     save_answer_to_file(answer)
