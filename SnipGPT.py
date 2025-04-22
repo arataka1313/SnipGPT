@@ -1,5 +1,4 @@
 import os
-import sys
 import platform
 import base64
 import openai
@@ -19,6 +18,7 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
 start_x = start_y = end_x = end_y = 0
+
 
 def select_area():
     def on_mouse_down(event):
