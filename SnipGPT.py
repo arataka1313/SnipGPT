@@ -1,21 +1,26 @@
 import os
+import sys
+import platform
 import base64
 import openai
 import tkinter as tk
 from dotenv import load_dotenv
 from PIL import ImageGrab
 
+# WindowsのDPI補正（Mac不要）
+if platform.system() == "Windows":
+    try:
+        import ctypes
+        ctypes.windll.user32.SetProcessDPIAware()
+    except Exception:
+        pass
 
 load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 
-# グローバル変数
 start_x = start_y = end_x = end_y = 0
 
-
 def select_area():
-    """マウスで範囲選択（Escキーでキャンセル可能）"""
-
     def on_mouse_down(event):
         nonlocal rect
         canvas.delete("rect")
@@ -35,11 +40,6 @@ def select_area():
         end_x, end_y = event.x, event.y
         root.quit()
 
-    def on_escape(event):
-        print("キャプチャがキャンセルされました（Escキー）")
-        root.quit()
-        raise SystemExit
-
     root = tk.Tk()
     root.attributes('-alpha', 0.3)
     root.attributes('-fullscreen', True)
@@ -52,7 +52,6 @@ def select_area():
     canvas.bind("<ButtonPress-1>", on_mouse_down)
     canvas.bind("<B1-Motion>", on_mouse_move)
     canvas.bind("<ButtonRelease-1>", on_mouse_up)
-    canvas.bind("<Escape>", on_escape)
 
     root.mainloop()
     root.destroy()
@@ -74,7 +73,6 @@ def get_next_problem_filename():
 
 
 def capture_selected_area():
-    """選択された領域のスクリーンショットを撮って連番で保存"""
     x1, y1 = min(start_x, end_x), min(start_y, end_y)
     x2, y2 = max(start_x, end_x), max(start_y, end_y)
     img = ImageGrab.grab(bbox=(x1, y1, x2, y2))
@@ -102,7 +100,7 @@ def save_answer_to_file(text):
     filename = get_next_answer_filename()
     with open(filename, "w", encoding="utf-8") as f:
         f.write(text)
-    print(f" 回答を {filename} に保存しました。")
+    print(f"回答を {filename} に保存しました。")
 
 
 def encode_image_to_base64(image_path):
@@ -134,16 +132,16 @@ def ask_chatgpt_with_image(image_path, prompt="この画像の問題に答えて
 
 
 def main():
-    print("🖱 範囲をドラッグして選択してください...")
+    print("範囲をドラッグして選択してください...")
     select_area()
-    print("📸 選択範囲をキャプチャ中...")
+    print("選択範囲をキャプチャ中...")
     path = capture_selected_area()
 
-    user_input = input(" 指示を入力してください（空でEnterするとデフォルト文が使われます）:\n> ")
+    user_input = input("指示を入力してください（空でEnterするとデフォルト文が使われます）:\n> ")
     default_prompt = "この画像の問題に対して適切に答えてください。"
     prompt = user_input.strip() or default_prompt
 
-    print(" ChatGPTに送信中...")
+    print("ChatGPTに送信中...")
     answer = ask_chatgpt_with_image(path, prompt)
     print("\n ChatGPTの回答:\n")
     print(answer)
